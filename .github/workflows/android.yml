@@ -14,33 +14,37 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # KROK 1: Ustawiamy Java 17 TYLKO do obsługi narzędzi sdkmanager
+    # KROK 1: Java 17 wymagana TYLKO dla sdkmanager (narzędzia Androida w Ubuntu 22.04 tego wymagają)
     - name: Set up JDK 17 for SDK Manager
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    # Konfiguracja ścieżek (wymagana, aby znaleźć sdkmanager)
     - name: Setup Android SDK Paths
       run: |
         echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-    # Instalacja licencji i narzędzi przy użyciu Java 17 (to teraz zadziała)
     - name: Accept Android SDK licenses & Install Tools
       run: |
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-    # KROK 2: Przełączamy się na Java 8 dla Gradle'a
-    # Nadpisuje to zmienną JAVA_HOME, więc Gradle użyje "ósemki"
-    - name: Set up JDK 8 for Gradle Build
+    # KROK 2: Java 8 wymagana dla Twojego kodu (stary projekt)
+    - name: Set up JDK 8 for Project
       uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'temurin'
-        cache: gradle
+    
+    # KROK 3: Instalacja Gradle 6.9.4
+    # Instalujemy starszego Gradle'a, który jest kompatybilny z Twoją starą wtyczką Androida.
+    # Gradle 7.5.1 (z wrappera) jest zbyt nowy i powoduje błąd.
+    - name: Setup Gradle 6.9.4
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '6.9.4'
 
     # Ukrycie NDK (rozwiązuje problem z katalogiem platforms)
     - name: Unset NDK Environment
@@ -48,12 +52,12 @@ jobs:
         echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=" >> $GITHUB_ENV
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    # Budowanie przy użyciu Java 8 (to naprawi błąd javax/xml/bind)
+    # KROK 4: Budowanie
+    # WAŻNE: Używamy komendy 'gradle', a NIE './gradlew'.
+    # './gradlew' pobrałby znowu niekompatybilną wersję 7.5.1.
+    # 'gradle' użyje wersji 6.9.4 zainstalowanej krok wcześniej.
     - name: Build Debug APK
-      run: ./gradlew assembleDebug
+      run: gradle assembleDebug --stacktrace
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
