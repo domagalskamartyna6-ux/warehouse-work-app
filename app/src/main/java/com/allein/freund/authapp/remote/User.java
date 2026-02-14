@@ -24,7 +24,7 @@ public class User {
     public static class Data {
         @SerializedName("id_employee")
         @Expose
-        private int idEmployee;
+        private String idEmployee;
 
         @SerializedName("skey")
         @Expose
