@@ -28,7 +28,7 @@ public class RetrofitClient {
 
                         Request original = chain.request();
                         Request.Builder builder = original.newBuilder()
-                                .header("AUTH_KEY", AUTH_KEY);
+                                .header("AUTH-KEY", AUTH_KEY);
 
                         String idEmployee = prefs.getString("ID_EMPLOYEE", null);
                         String skey = prefs.getString("SKEY", null);
