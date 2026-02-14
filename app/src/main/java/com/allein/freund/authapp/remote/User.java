@@ -30,7 +30,7 @@ public class User {
         @Expose
         private String skey;
 
-        public int getIdEmployee() { return idEmployee; }
+        public String getIdEmployee() { return idEmployee; }
         public String getSkey() { return skey; }
     }
 }
