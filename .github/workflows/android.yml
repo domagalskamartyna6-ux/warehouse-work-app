@@ -14,23 +14,35 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # POPRAWKA GŁÓWNA: Użycie Javy 8.
-    # To jest konieczne, gdy otrzymujesz błąd "javax/xml/bind/annotation/XmlSchema".
-    - name: Set up JDK 8
+    # KROK 1: Ustawiamy Java 17 TYLKO do obsługi narzędzi sdkmanager
+    - name: Set up JDK 17 for SDK Manager
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # Konfiguracja ścieżek (wymagana, aby znaleźć sdkmanager)
+    - name: Setup Android SDK Paths
+      run: |
+        echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+
+    # Instalacja licencji i narzędzi przy użyciu Java 17 (to teraz zadziała)
+    - name: Accept Android SDK licenses & Install Tools
+      run: |
+        yes | sdkmanager --licenses
+        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+    # KROK 2: Przełączamy się na Java 8 dla Gradle'a
+    # Nadpisuje to zmienną JAVA_HOME, więc Gradle użyje "ósemki"
+    - name: Set up JDK 8 for Gradle Build
       uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'temurin'
         cache: gradle
 
-    # Naprawa błędu "Unable to locate executable file: tar"
-    - name: Setup Android SDK Paths
-      run: |
-        echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
-        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-
-    # POPRAWKA NDK: Całkowite ukrycie NDK przed Gradle.
-    # Rozwiązuje błąd "NDK is missing a platforms directory".
+    # Ukrycie NDK (rozwiązuje problem z katalogiem platforms)
     - name: Unset NDK Environment
       run: |
         echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
@@ -39,13 +51,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Accept Android SDK licenses
-      run: yes | sdkmanager --licenses
-
-    - name: Ensure Build Tools & Platform
-      run: |
-        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
+    # Budowanie przy użyciu Java 8 (to naprawi błąd javax/xml/bind)
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
