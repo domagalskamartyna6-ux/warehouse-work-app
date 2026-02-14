@@ -66,7 +66,7 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
     }
 
     private void getInvoiceDetails() {
-        mAPIService.getInvoiceDetails(userCookie, invoiceId).enqueue(new Callback<List<InvoiceDetails>>() {
+        mAPIService.getInvoiceDetails(invoiceId).enqueue(new Callback<List<InvoiceDetails>>() {
             @Override
             public void onResponse(Call<List<InvoiceDetails>> call, Response<List<InvoiceDetails>> response) {
                 if (response.isSuccessful()) {
@@ -117,7 +117,6 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ScanActivity.class);
         intent.putExtra(INVOICE_DETAILS, json);
         intent.putExtra(INVOICE_ID, String.valueOf(invoiceId));
-        intent.putExtra(LoginActivity.USER_COOKIE, userCookie);
         startActivityForResult(intent, 1);
     }
 

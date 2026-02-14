@@ -11,7 +11,7 @@ public class APIUtils {
     private APIUtils() {
     }
 
-    public static final String BASE_URL = "http://diluonline.eu/module/pickingcart/";
+    public static final String BASE_URL = "https://diluonline.eu/module/pickingcart/";
 
     public static AuthService getAuthService(Context context) {
         return RetrofitClient.getClient(BASE_URL, context).create(AuthService.class);

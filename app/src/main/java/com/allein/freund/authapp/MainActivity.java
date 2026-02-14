@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getInvoices() {
-        mAPIService.getInvoices(userCookie).enqueue(new Callback<List<Invoice>>() {
+        mAPIService.getInvoices().enqueue(new Callback<List<Invoice>>() {
             @Override
             public void onResponse(Call<List<Invoice>> call, Response<List<Invoice>> response) {
                 if (response.isSuccessful()) {
@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void passToInvoiceDetailsActivity(Invoice invoice) {
         Intent intent = new Intent(this, InvoiceDetailsActivity.class);
-        intent.putExtra(LoginActivity.USER_COOKIE, userCookie);
         intent.putExtra(INVOICE_ID, String.valueOf(invoice.getNumber()));
         intent.putExtra(INVOICE_CUSTOMER, invoice.getCustomer());
         intent.putExtra(INVOICE_SIZE, String.valueOf(invoice.getPositions()));

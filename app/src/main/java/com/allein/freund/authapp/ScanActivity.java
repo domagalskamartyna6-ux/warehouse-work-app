@@ -216,7 +216,7 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
     }
 
     private void sendToServer() {
-        mAPIService.sendInvoiceComplected(userCookie, Integer.parseInt(invoiceId)).enqueue(new Callback<String>() {
+        mAPIService.sendInvoiceComplected(Integer.parseInt(invoiceId)).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
