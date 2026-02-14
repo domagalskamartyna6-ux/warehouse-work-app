@@ -9,7 +9,7 @@ public class APIUtils {
     private APIUtils() {
     }
 
-    public static final String BASE_URL = "http://diluonline.eu/";
+    public static final String BASE_URL = "https://diluonline.eu/module/pickingcart/";
 
     public static AuthService getAuthService() {
         return RetrofitClient.getClient(BASE_URL).create(AuthService.class);
