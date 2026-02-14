@@ -1,100 +1,30 @@
-name: Fast Android Debug Build
+name: Android CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "**" ]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
-    # Ustawiamy własną, pustą ścieżkę do SDK, aby uniknąć błędów "34x" z wersji systemowej
-    env:
-      ANDROID_HOME: ${{ github.workspace }}/android-sdk-clean
-
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    # ------------------------------------------------------------------
-    # KROK 1: Przygotowanie Czystego SDK (wymaga Java 17 do instalacji)
-    # ------------------------------------------------------------------
-    - name: Set up JDK 17 for SDK Setup
+    - uses: actions/checkout@v4
+    - name: set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
-
-    # Pobieramy świeże narzędzia command-line i tworzymy czystą strukturę folderów.
-    # To kluczowe, aby Java 8 nie widziała "śmieci" (wersji 34x) z systemowego obrazu.
-    - name: Setup Clean Android SDK
-      run: |
-        # Tworzymy pusty katalog
-        mkdir -p $ANDROID_HOME/cmdline-tools
-        
-        # Pobieramy Command Line Tools (wersja stabilna 11076708)
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-        unzip -q cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
-        mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-        rm cmdline-tools.zip
-        
-        # Dodajemy do PATH
-        echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
-        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-        
-        # Ustawiamy zmienną dla tego kroku (bo GITHUB_PATH działa dopiero od następnego)
-        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-        
-        # Akceptujemy licencje
-        yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME
-        
-        # Instalujemy TYLKO to, co potrzebne (bez nowych wersji 34x/35)
-        # Dodaję też starsze build-tools, na wypadek gdyby projekt ich szukał
-        sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;30.0.3" "build-tools;29.0.2"
-
-    # ------------------------------------------------------------------
-    # KROK 2: Powrót do Java 8 (Dla Twojego kodu)
-    # ------------------------------------------------------------------
-    - name: Set up JDK 8 for Project Build
-      uses: actions/setup-java@v4
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-
-    # ------------------------------------------------------------------
-    # KROK 3: Wymuszenie Gradle 6.9.4
-    # (Zachowujemy to rozwiązanie z poprzednich kroków, bo działało)
-    # ------------------------------------------------------------------
-    - name: Force Gradle 6.9.4 wrapper
-      run: |
-        rm -f gradle/wrapper/gradle-wrapper.properties
-        mkdir -p gradle/wrapper
-        echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
-        echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-        echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
-        echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-        echo "distributionUrl=https\://services.gradle.org/distributions/gradle-6.9.4-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
-
-    # Ukrycie NDK
-    - name: Unset NDK Environment
-      run: |
-        echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
-        echo "ANDROID_NDK_ROOT=" >> $GITHUB_ENV
+        cache: gradle
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew assembleDebug
 
-    # ------------------------------------------------------------------
-    # KROK 4: Budowanie
-    # Teraz Java 8 widzi tylko nasze czyste SDK, bez wersji "34x", więc parsing XML przejdzie.
-    # ------------------------------------------------------------------
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug -x lint --stacktrace --warning-mode all
-
-    - name: Upload Debug APK
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-apk
+        name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
