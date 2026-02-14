@@ -28,7 +28,8 @@ public class RetrofitClient {
 
                         Request original = chain.request();
                         Request.Builder builder = original.newBuilder()
-                                .header("AUTH-KEY", AUTH_KEY);
+                                .header("AUTH-KEY", AUTH_KEY)
+                                .header("Content-Type", "application/x-www-form-urlencoded");
 
                         String idEmployee = prefs.getString("ID_EMPLOYEE", null);
                         String skey = prefs.getString("SKEY", null);
