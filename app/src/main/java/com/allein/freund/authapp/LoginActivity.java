@@ -60,15 +60,31 @@ public class LoginActivity extends AppCompatActivity {
                 .enqueue(new Callback<User>() {
                     @Override
                     public void onResponse(Call<User> call, Response<User> response) {
-                        if (response.isSuccessful()) {
-                            loginToast("Login complete.");
-                            Log.i(TAG, "login complete.");
-                            List<String> cookies = response.headers().values("Set-Cookie");
-                            String userCookie = getUserCookie(cookies);
-                            passToMainActivity(userCookie);
+                        if (response.isSuccessful() && response.body() != null) {
+                            User user = response.body();
+                            if ("success".equals(user.getStatus()) && user.getData() != null) {
+                    
+                                // Zapis ID i SKEY
+                                getSharedPreferences("APP_PREFS", MODE_PRIVATE)
+                                        .edit()
+                                        .putString("ID_EMPLOYEE", String.valueOf(user.getData().getIdEmployee()))
+                                        .putString("SKEY", user.getData().getSkey())
+                                        .apply();
+                    
+                                loginToast("Login complete.");
+                                Log.i(TAG, "login complete.");
+                    
+                                // Przejście do MainActivity
+                                passToMainActivity();
+                    
+                            } else {
+                                loginToast("Credentials are invalid.");
+                                Log.i(TAG, "credentials are invalid.");
+                                showLoginButton(true);
+                            }
                         } else {
-                            loginToast("Credentials are invalid.");
-                            Log.i(TAG, "credentials are invalid.");
+                            loginToast("Login failed. Server error.");
+                            Log.i(TAG, "login failed: " + response.message());
                             showLoginButton(true);
                         }
                     }
@@ -101,11 +117,11 @@ public class LoginActivity extends AppCompatActivity {
         return null;
     }
 
-    private void passToMainActivity(String userCookie) {
+    private void passToMainActivity() {
         showLoginButton(true);
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(USER_COOKIE, userCookie);
         startActivity(intent);
+        finish(); // żeby nie wracać do LoginActivity
     }
 
     private void loginToast(String message) {
