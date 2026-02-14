@@ -30,14 +30,16 @@ public class RetrofitClient {
                         Request.Builder builder = original.newBuilder()
                                 .header("AUTH-KEY", AUTH_KEY)
                                 .header("Content-Type", "application/x-www-form-urlencoded");
+                                .header("ID-EMPLOYEE", "1")
+                                .header("SKEY", "9bc6b091de3fc88371f1525dbd20f155");
 
                         String idEmployee = prefs.getString("ID_EMPLOYEE", null);
                         String skey = prefs.getString("SKEY", null);
 
-                        if (idEmployee != null && skey != null) {
-                            builder.header("ID-EMPLOYEE", idEmployee);
-                            builder.header("SKEY", skey);
-                        }
+                        //if (idEmployee != null && skey != null) {
+                        //    builder.header("ID-EMPLOYEE", idEmployee);
+                        //    builder.header("SKEY", skey);
+                        //}
 
                         Request request = builder.build();
                         return chain.proceed(request);
