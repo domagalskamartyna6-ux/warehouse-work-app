@@ -31,25 +31,28 @@ jobs:
     - name: Run instrumentation tests on emulator
       uses: ReactiveCircus/android-emulator-runner@v2
       with:
-        api-level: 34
+        api-level: 33
         target: google_apis
         arch: x86_64
-        profile: pixel_6
-        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+        profile: pixel
+        force-avd-creation: true
+        emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -memory 4096
         disable-animations: true
         script: |
+          adb kill-server
+          adb start-server
+
+          echo "Waiting for emulator..."
+          adb wait-for-device
+
+          echo "Waiting for boot completion..."
+          until [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
+            sleep 5
+          done
+
+          adb shell input keyevent 82
+
           adb logcat -c
           ./gradlew connectedDebugAndroidTest --stacktrace
           adb logcat -d > emulator-logcat.txt
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
-
-    - name: Upload Emulator Logs
-      uses: actions/upload-artifact@v4
-      with:
-        name: emulator-logs
-        path: emulator-logcat.txt
