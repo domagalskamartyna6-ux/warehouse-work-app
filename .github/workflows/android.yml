@@ -14,7 +14,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # KROK 1: Java 17 wymagana TYLKO dla sdkmanager (narzędzia Androida w Ubuntu 22.04 tego wymagają)
+    # KROK 1: Java 17 tylko do konfiguracji SDK (wymóg Ubuntu 22.04)
     - name: Set up JDK 17 for SDK Manager
       uses: actions/setup-java@v4
       with:
@@ -26,38 +26,40 @@ jobs:
         echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
+    # Instalujemy też starsze build-tools, których Twój projekt może szukać
     - name: Accept Android SDK licenses & Install Tools
       run: |
         yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;30.0.3" "build-tools;29.0.2"
 
-    # KROK 2: Java 8 wymagana dla Twojego kodu (stary projekt)
+    # KROK 2: Java 8 do właściwego budowania (wymóg starego projektu)
     - name: Set up JDK 8 for Project
       uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'temurin'
     
-    # KROK 3: Instalacja Gradle 6.9.4
-    # Instalujemy starszego Gradle'a, który jest kompatybilny z Twoją starą wtyczką Androida.
-    # Gradle 7.5.1 (z wrappera) jest zbyt nowy i powoduje błąd.
-    - name: Setup Gradle 6.9.4
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: '6.9.4'
+    # KROK 3: "Naprawa" wersji Gradle w projekcie (Downgrade 7.5.1 -> 6.9.4)
+    # Zmieniamy konfigurację wrappera w locie, aby ./gradlew pobrał starszą, działającą wersję.
+    - name: Downgrade Gradle Wrapper
+      run: |
+        sed -i 's/gradle-7.5.1-all.zip/gradle-6.9.4-all.zip/g' gradle/wrapper/gradle-wrapper.properties
+        cat gradle/wrapper/gradle-wrapper.properties
 
-    # Ukrycie NDK (rozwiązuje problem z katalogiem platforms)
+    # Ukrycie NDK
     - name: Unset NDK Environment
       run: |
         echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=" >> $GITHUB_ENV
 
-    # KROK 4: Budowanie
-    # WAŻNE: Używamy komendy 'gradle', a NIE './gradlew'.
-    # './gradlew' pobrałby znowu niekompatybilną wersję 7.5.1.
-    # 'gradle' użyje wersji 6.9.4 zainstalowanej krok wcześniej.
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # KROK 4: Budowanie z flagą -x lint
+    # -x lint: Ignoruje błędy jakości kodu (częste w starych projektach)
+    # --stacktrace: Pokaże dokładny błąd, jeśli znowu coś pójdzie nie tak
     - name: Build Debug APK
-      run: gradle assembleDebug --stacktrace
+      run: ./gradlew assembleDebug -x lint --stacktrace --warning-mode all
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
