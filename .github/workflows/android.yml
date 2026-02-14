@@ -10,24 +10,27 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-    # USUNIĘTO błędną sekcję env, która psuła dostęp do polecenia 'tar'
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    # POPRAWKA 1: Zmiana Java 17 -> 11 (rozwiązuje błąd javax/xml/bind/annotation/XmlSchema)
+    - name: Set up JDK 11
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '11'
         distribution: 'temurin'
         cache: gradle
 
-    # NOWOŚĆ: Bezpieczne dodanie narzędzi Androida do PATH
     - name: Setup Android SDK Paths
       run: |
         echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+
+    # POPRAWKA 2: Ukrycie NDK przed Gradle (rozwiązuje błąd "NDK is missing a platforms directory")
+    # Jeśli Twój projekt nie używa kodu natywnego (C++), to pomoże uniknąć błędów wersji.
+    - name: Unset NDK Environment
+      run: echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -35,6 +38,7 @@ jobs:
     - name: Accept Android SDK licenses
       run: yes | sdkmanager --licenses
 
+    # Upewniamy się, że build-tools pasują do tego, co masz w build.gradle
     - name: Ensure Build Tools & Platform
       run: |
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
