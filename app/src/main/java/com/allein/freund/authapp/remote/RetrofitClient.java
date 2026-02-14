@@ -35,7 +35,7 @@ public class RetrofitClient {
                         String skey = prefs.getString("SKEY", null);
 
                         if (idEmployee != null && skey != null) {
-                            builder.header("ID_EMPLOYEE", idEmployee);
+                            builder.header("ID-EMPLOYEE", idEmployee);
                             builder.header("SKEY", skey);
                         }
 
