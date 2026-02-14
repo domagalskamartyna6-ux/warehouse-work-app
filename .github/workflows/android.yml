@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_HOME: ${{ runner.home }}/Android/Sdk
-      PATH: ${{ runner.home }}/Android/Sdk/cmdline-tools/latest/bin:${{ runner.home }}/Android/Sdk/platform-tools:$PATH
+      ANDROID_HOME: $HOME/Android/Sdk
+      PATH: $HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH
 
     steps:
     - name: Checkout code
