@@ -14,7 +14,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # KROK 1: Java 17 tylko do konfiguracji SDK (wymóg Ubuntu 22.04)
+    # ------------------------------------------------------------------
+    # KROK 1: Przygotowanie środowiska SDK (wymaga Java 17)
+    # ------------------------------------------------------------------
     - name: Set up JDK 17 for SDK Manager
       uses: actions/setup-java@v4
       with:
@@ -26,40 +28,45 @@ jobs:
         echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
         echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-    # Instalujemy też starsze build-tools, których Twój projekt może szukać
+    # Instalujemy zestaw starszych narzędzi, bo stary projekt może ich wymagać
     - name: Accept Android SDK licenses & Install Tools
       run: |
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;30.0.3" "build-tools;29.0.2"
 
-    # KROK 2: Java 8 do właściwego budowania (wymóg starego projektu)
-    - name: Set up JDK 8 for Project
+    # ------------------------------------------------------------------
+    # KROK 2: Przygotowanie środowiska do budowania (wymaga Java 8)
+    # ------------------------------------------------------------------
+    - name: Set up JDK 8 for Project Build
       uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'temurin'
     
-    # KROK 3: "Naprawa" wersji Gradle w projekcie (Downgrade 7.5.1 -> 6.9.4)
-    # Zmieniamy konfigurację wrappera w locie, aby ./gradlew pobrał starszą, działającą wersję.
-    - name: Downgrade Gradle Wrapper
-      run: |
-        sed -i 's/gradle-7.5.1-all.zip/gradle-6.9.4-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-        cat gradle/wrapper/gradle-wrapper.properties
+    # ------------------------------------------------------------------
+    # KROK 3: Instalacja Gradle 6.9.4
+    # Ignorujemy wersję 7.5.1 z Twojego pliku i instalujemy starszą,
+    # która jest kompatybilna z Javą 8 i Twoim kodem.
+    # ------------------------------------------------------------------
+    - name: Setup Gradle 6.9.4
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '6.9.4'
 
-    # Ukrycie NDK
+    # Ukrycie NDK, żeby nie powodowało konfliktów
     - name: Unset NDK Environment
       run: |
         echo "ANDROID_NDK_HOME=" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=" >> $GITHUB_ENV
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    # KROK 4: Budowanie z flagą -x lint
-    # -x lint: Ignoruje błędy jakości kodu (częste w starych projektach)
-    # --stacktrace: Pokaże dokładny błąd, jeśli znowu coś pójdzie nie tak
+    # ------------------------------------------------------------------
+    # KROK 4: Budowanie
+    # WAŻNE: Używamy polecenia `gradle`, a NIE `./gradlew`.
+    # `./gradlew` czyta Twój plik i próbuje pobrać wersję 7.5.1 (błąd).
+    # `gradle` używa wersji 6.9.4 zainstalowanej powyżej (sukces).
+    # ------------------------------------------------------------------
     - name: Build Debug APK
-      run: ./gradlew assembleDebug -x lint --stacktrace --warning-mode all
+      run: gradle assembleDebug -x lint --stacktrace --warning-mode all
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
