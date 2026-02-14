@@ -1,4 +1,4 @@
-name: Android Debug Build
+name: Fast Android Debug Build
 
 on:
   push:
@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      ANDROID_HOME: $HOME/Android/Sdk
-      PATH: $HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:/usr/local/lib/android/sdk/platform-tools:$PATH
 
     steps:
     - name: Checkout code
@@ -28,17 +28,11 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Install required tools
-      run: sudo apt-get update && sudo apt-get install -y unzip wget tar
+    - name: Accept Android SDK licenses
+      run: yes | sdkmanager --licenses
 
-    - name: Install Android SDK Commandline Tools
+    - name: Ensure Build Tools & Platform
       run: |
-        mkdir -p $ANDROID_HOME/cmdline-tools
-        cd $ANDROID_HOME/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-        unzip -q cmdline-tools.zip
-        mv cmdline-tools latest
-        yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Build Debug APK
