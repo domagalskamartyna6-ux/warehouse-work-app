@@ -2,7 +2,7 @@ package com.allein.freund.authapp;
 
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         invoiceList = new ArrayList<>();
         ListView invoiceListView = (ListView) findViewById(R.id.listview);
         adapter = new ListViewAdapter(this, invoiceList);
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void logout() {
         finish();
-        AuthService mAuthService = APIUtils.getAuthService();
+        AuthService mAuthService = APIUtils.getAuthService(this);
         mAuthService.logout().enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {

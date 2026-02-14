@@ -3,7 +3,7 @@ package com.allein.freund.authapp;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
-        mAuthService = APIUtils.getAuthService();
+        mAuthService = APIUtils.getAuthService(this);
         loginBtn = (Button) findViewById(R.id.btn_submit);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         loginBtn.setOnClickListener(new View.OnClickListener() {

@@ -1,7 +1,7 @@
 package com.allein.freund.authapp;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -53,7 +53,7 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
         TextView detailsMoney = (TextView) findViewById(R.id.detailsMoney);
         detailsMoney.setText("Total cost: " + money + " $");
 
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         invoiceId = Integer.parseInt(id);
         userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceDetails = new ArrayList<>();

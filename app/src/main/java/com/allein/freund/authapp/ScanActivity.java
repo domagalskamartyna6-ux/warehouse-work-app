@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -99,7 +99,7 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
         }
         userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceId = intent.getStringExtra(InvoiceDetailsActivity.INVOICE_ID);
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         doneItemList = new ArrayList<>();
         ListView remainListView = (ListView) findViewById(R.id.scanToDo);
         adapterRemain = new InvoiceDetailsAdapter(this, remainItemList);
