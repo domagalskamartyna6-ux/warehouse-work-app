@@ -4,25 +4,21 @@ package com.allein.freund.authapp.remote;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.http.Field;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.POST;
-import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by freund on 1/10/18.
  */
 
 public interface APIService {
-    @GET("/api/invoices/")
-    Call<List<Invoice>> getInvoices(@Header("Cookie") String userCookie);
+    @GET("pickingapi?method=getPicking")
+    Call<List<Invoice>> getInvoices();
 
-    @GET("/api/invoices/{id}")
-    Call<List<InvoiceDetails>> getInvoiceDetails(@Header("Cookie") String userCookie,
-                                                 @Path("id") int invoiceId);
+    @GET("pickingapi?method=getCartList")
+    Call<List<InvoiceDetails>> getInvoiceDetails(@Query("id_order") int invoiceId);
 
-    @POST("/api/invoices/{id}")
-    Call<String> sendInvoiceComplected(@Header("Cookie") String userCookie,
-                                       @Path("id") int invoiceId);
+    @POST("pickingapi?method=updateStatus")
+    Call<String> sendInvoiceComplected(@Query("id_order") int invoiceId);
 }

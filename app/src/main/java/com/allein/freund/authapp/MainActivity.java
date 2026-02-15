@@ -2,7 +2,7 @@ package com.allein.freund.authapp;
 
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,9 +12,7 @@ import android.widget.ListView;
 
 import com.allein.freund.authapp.remote.APIService;
 import com.allein.freund.authapp.remote.APIUtils;
-import com.allein.freund.authapp.remote.AuthService;
 import com.allein.freund.authapp.remote.Invoice;
-import com.allein.freund.authapp.remote.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String INVOICE_MONEY = "com.allein.freund.authapp.INVOICE_MONEY";
     private String TAG = "MAIN";
     private APIService mAPIService;
-    private String userCookie;
     private List<Invoice> invoiceList;
     private ListViewAdapter adapter;
 
@@ -41,9 +38,7 @@ public class MainActivity extends AppCompatActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-        Intent intent = getIntent();
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         invoiceList = new ArrayList<>();
         ListView invoiceListView = (ListView) findViewById(R.id.listview);
         adapter = new ListViewAdapter(this, invoiceList);
@@ -71,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getInvoices() {
-        mAPIService.getInvoices(userCookie).enqueue(new Callback<List<Invoice>>() {
+        mAPIService.getInvoices().enqueue(new Callback<List<Invoice>>() {
             @Override
             public void onResponse(Call<List<Invoice>> call, Response<List<Invoice>> response) {
                 if (response.isSuccessful()) {
@@ -94,23 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void logout(View view) {
-        logout();
-    }
-
-    private void logout() {
         finish();
-        AuthService mAuthService = APIUtils.getAuthService();
-        mAuthService.logout().enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                Log.i(TAG, "Logout.");
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.e(TAG, "Unable to logout form server:" + t.getMessage());
-            }
-        });
     }
 
     private void populateList(List<Invoice> invoices) {
@@ -121,17 +100,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        logout();
+        finish();
     }
 
     private void passToInvoiceDetailsActivity(Invoice invoice) {
         Intent intent = new Intent(this, InvoiceDetailsActivity.class);
-        intent.putExtra(LoginActivity.USER_COOKIE, userCookie);
         intent.putExtra(INVOICE_ID, String.valueOf(invoice.getNumber()));
         intent.putExtra(INVOICE_CUSTOMER, invoice.getCustomer());
         intent.putExtra(INVOICE_SIZE, String.valueOf(invoice.getPositions()));
         intent.putExtra(INVOICE_MONEY, String.valueOf(invoice.getMoney()));
-//        intent.putExtra("ExtraObj", invoice);
         startActivity(intent);
     }
 }

@@ -11,9 +11,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
 
+    // Singleton instance of Retrofit
     private static Retrofit retrofit = null;
     private static final String AUTH_KEY = "aDJucjNPNExWVHBYXg1TVl6NERrTHZaOGF1N2FOamdFY3g0ZA==";
 
@@ -47,6 +49,7 @@ public class RetrofitClient {
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .client(client)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

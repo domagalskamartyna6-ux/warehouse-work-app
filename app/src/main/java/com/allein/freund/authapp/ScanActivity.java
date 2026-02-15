@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -44,7 +44,6 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
     private String lastScanResult;
     private InvoiceDetailsAdapter adapterDone;
     private InvoiceDetailsAdapter adapterRemain;
-    private String userCookie;
     private String invoiceId;
     private APIService mAPIService;
 
@@ -97,9 +96,8 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
         } else {
             Log.d(TAG, "Items transition failed");
         }
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceId = intent.getStringExtra(InvoiceDetailsActivity.INVOICE_ID);
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         doneItemList = new ArrayList<>();
         ListView remainListView = (ListView) findViewById(R.id.scanToDo);
         adapterRemain = new InvoiceDetailsAdapter(this, remainItemList);
@@ -216,7 +214,7 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
     }
 
     private void sendToServer() {
-        mAPIService.sendInvoiceComplected(userCookie, Integer.parseInt(invoiceId)).enqueue(new Callback<String>() {
+        mAPIService.sendInvoiceComplected(Integer.parseInt(invoiceId)).enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {

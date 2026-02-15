@@ -1,7 +1,7 @@
 package com.allein.freund.authapp;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +24,6 @@ import retrofit2.Response;
 
 public class InvoiceDetailsActivity extends AppCompatActivity {
     private APIService mAPIService;
-    private String userCookie;
     private int invoiceId;
     private List<InvoiceDetails> invoiceDetails;
     private InvoiceDetailsAdapter adapter;
@@ -53,9 +52,8 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
         TextView detailsMoney = (TextView) findViewById(R.id.detailsMoney);
         detailsMoney.setText("Total cost: " + money + " $");
 
-        mAPIService = APIUtils.getApiService();
+        mAPIService = APIUtils.getApiService(this);
         invoiceId = Integer.parseInt(id);
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceDetails = new ArrayList<>();
 
         ListView detailsListView = (ListView) findViewById(R.id.detailsListView);
@@ -66,7 +64,7 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
     }
 
     private void getInvoiceDetails() {
-        mAPIService.getInvoiceDetails(userCookie, invoiceId).enqueue(new Callback<List<InvoiceDetails>>() {
+        mAPIService.getInvoiceDetails(invoiceId).enqueue(new Callback<List<InvoiceDetails>>() {
             @Override
             public void onResponse(Call<List<InvoiceDetails>> call, Response<List<InvoiceDetails>> response) {
                 if (response.isSuccessful()) {
@@ -117,7 +115,6 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ScanActivity.class);
         intent.putExtra(INVOICE_DETAILS, json);
         intent.putExtra(INVOICE_ID, String.valueOf(invoiceId));
-        intent.putExtra(LoginActivity.USER_COOKIE, userCookie);
         startActivityForResult(intent, 1);
     }
 
