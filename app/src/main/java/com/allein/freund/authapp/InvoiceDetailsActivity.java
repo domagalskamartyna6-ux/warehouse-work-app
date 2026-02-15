@@ -24,7 +24,6 @@ import retrofit2.Response;
 
 public class InvoiceDetailsActivity extends AppCompatActivity {
     private APIService mAPIService;
-    private String userCookie;
     private int invoiceId;
     private List<InvoiceDetails> invoiceDetails;
     private InvoiceDetailsAdapter adapter;
@@ -55,7 +54,6 @@ public class InvoiceDetailsActivity extends AppCompatActivity {
 
         mAPIService = APIUtils.getApiService(this);
         invoiceId = Integer.parseInt(id);
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceDetails = new ArrayList<>();
 
         ListView detailsListView = (ListView) findViewById(R.id.detailsListView);

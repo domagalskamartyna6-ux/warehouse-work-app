@@ -44,7 +44,6 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
     private String lastScanResult;
     private InvoiceDetailsAdapter adapterDone;
     private InvoiceDetailsAdapter adapterRemain;
-    private String userCookie;
     private String invoiceId;
     private APIService mAPIService;
 
@@ -97,7 +96,6 @@ public class ScanActivity extends AppCompatActivity implements DecoratedBarcodeV
         } else {
             Log.d(TAG, "Items transition failed");
         }
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         invoiceId = intent.getStringExtra(InvoiceDetailsActivity.INVOICE_ID);
         mAPIService = APIUtils.getApiService(this);
         doneItemList = new ArrayList<>();

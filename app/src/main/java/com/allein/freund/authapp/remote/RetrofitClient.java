@@ -11,9 +11,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
 
+    // Singleton instance of Retrofit
     private static Retrofit retrofit = null;
     private static final String AUTH_KEY = "aDJucjNPNExWVHBYXg1TVl6NERrTHZaOGF1N2FOamdFY3g0ZA==";
 
@@ -28,18 +30,15 @@ public class RetrofitClient {
 
                         Request original = chain.request();
                         Request.Builder builder = original.newBuilder()
-                                .header("AUTH-KEY", AUTH_KEY)
-                                .header("Content-Type", "application/x-www-form-urlencoded")
-                                .header("ID-EMPLOYEE", "1")
-                                .header("SKEY", "9bc6b091de3fc88371f1525dbd20f155");
+                                .header("AUTH_KEY", AUTH_KEY);
 
                         String idEmployee = prefs.getString("ID_EMPLOYEE", null);
                         String skey = prefs.getString("SKEY", null);
 
-                        //if (idEmployee != null && skey != null) {
-                        //    builder.header("ID-EMPLOYEE", idEmployee);
-                        //    builder.header("SKEY", skey);
-                        //}
+                        if (idEmployee != null && skey != null) {
+                            builder.header("ID_EMPLOYEE", idEmployee);
+                            builder.header("SKEY", skey);
+                        }
 
                         Request request = builder.build();
                         return chain.proceed(request);
@@ -50,6 +49,7 @@ public class RetrofitClient {
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .client(client)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

@@ -12,9 +12,7 @@ import android.widget.ListView;
 
 import com.allein.freund.authapp.remote.APIService;
 import com.allein.freund.authapp.remote.APIUtils;
-import com.allein.freund.authapp.remote.AuthService;
 import com.allein.freund.authapp.remote.Invoice;
-import com.allein.freund.authapp.remote.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String INVOICE_MONEY = "com.allein.freund.authapp.INVOICE_MONEY";
     private String TAG = "MAIN";
     private APIService mAPIService;
-    private String userCookie;
     private List<Invoice> invoiceList;
     private ListViewAdapter adapter;
 
@@ -41,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-        Intent intent = getIntent();
-        userCookie = intent.getStringExtra(LoginActivity.USER_COOKIE);
         mAPIService = APIUtils.getApiService(this);
         invoiceList = new ArrayList<>();
         ListView invoiceListView = (ListView) findViewById(R.id.listview);
@@ -94,23 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void logout(View view) {
-        logout();
-    }
-
-    private void logout() {
         finish();
-        AuthService mAuthService = APIUtils.getAuthService(this);
-        mAuthService.logout().enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                Log.i(TAG, "Logout.");
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.e(TAG, "Unable to logout form server:" + t.getMessage());
-            }
-        });
     }
 
     private void populateList(List<Invoice> invoices) {
@@ -121,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        logout();
+        finish();
     }
 
     private void passToInvoiceDetailsActivity(Invoice invoice) {
@@ -130,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(INVOICE_CUSTOMER, invoice.getCustomer());
         intent.putExtra(INVOICE_SIZE, String.valueOf(invoice.getPositions()));
         intent.putExtra(INVOICE_MONEY, String.valueOf(invoice.getMoney()));
-//        intent.putExtra("ExtraObj", invoice);
         startActivity(intent);
     }
 }

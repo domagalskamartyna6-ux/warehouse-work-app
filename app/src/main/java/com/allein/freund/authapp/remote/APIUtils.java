@@ -13,10 +13,6 @@ public class APIUtils {
 
     public static final String BASE_URL = "https://diluonline.eu/module/pickingcart/";
 
-    public static AuthService getAuthService(Context context) {
-        return RetrofitClient.getClient(BASE_URL, context).create(AuthService.class);
-    }
-
     public static APIService getApiService(Context context) {
         return RetrofitClient.getClient(BASE_URL, context).create(APIService.class);
     }
